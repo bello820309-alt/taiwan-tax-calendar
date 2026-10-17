@@ -1,0 +1,2 @@
+id,tax_type,title,applicable_to,deadline_rule,source_url,last_verified,status
+VAT-001,營業稅,一般營業稅申報繳納,一般採每二月為一期申報之營業人,次期開始15日內,https://www.etax.nat.gov.tw/etwmain/tax-info/understanding/tax-q-and-a/national/business-tax/collection-prcedure/oVL9pwM,2026-10-17,source_checked_rule_needs_review
