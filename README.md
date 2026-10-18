@@ -29,9 +29,13 @@ An open-source project to organize Taiwan tax filing deadlines, official tax ref
 
 These links are starting points for research. Individual calendar entries must be checked against their applicable official sources before being marked as verified.
 
-## Current Status
+Current Status
 
-This project is in its initial setup stage. Verified deadline records and automated calendar features have not yet been added.
+The project now includes an initial Taiwan business tax filing deadline record in "data/tax_deadlines.csv".
+
+The initial record covers the general business tax filing cycle and links to an official Ministry of Finance source. Additional tax deadlines will be added after their applicable rules and official references have been reviewed.
+
+Automated calendar features have not yet been implemented.
 
 ## Contributing
 
