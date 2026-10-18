@@ -1,0 +1,70 @@
+name: Validate tax deadline data
+
+on:
+  push:
+    paths:
+      - 'data/tax_deadlines.csv'
+      - '.github/workflows/validate-data.yml'
+  pull_request:
+    paths:
+      - 'data/tax_deadlines.csv'
+      - '.github/workflows/validate-data.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-csv:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Validate CSV structure
+        run: python - <<'PY'
+          import csv
+          import datetime
+          import sys
+          from pathlib import Path
+
+          path = Path('data/tax_deadlines.csv')
+          required = ['id', 'tax_type', 'title', 'applicable_to', 'deadline_rule', 'source_url', 'last_verified', 'status']
+          allowed_statuses = {'source_checked_rule_needs_review', 'verified', 'needs_review'}
+
+          if not path.is_file():
+              sys.exit('ERROR: CSV file not found: ' + str(path))
+
+          with path.open(encoding='utf-8-sig', newline='') as f:
+              reader = csv.DictReader(f)
+              if reader.fieldnames != required:
+                  sys.exit(f'ERROR: Expected columns {required}, got {reader.fieldnames}')
+
+              seen = set()
+              count = 0
+              for line, row in enumerate(reader, start=2):
+                  count += 1
+                  if None in row or any(row.get(k) is None or not row[k].strip() for k in required):
+                      sys.exit(f'ERROR: Missing field or wrong column count on line {line}')
+                  if row['id'] in seen:
+                      sys.exit(f'ERROR: Duplicate id on line {line}: {row["id"]}')
+                  seen.add(row['id'])
+                  try:
+                      datetime.date.fromisoformat(row['last_verified'])
+                  except ValueError:
+                      sys.exit(f'ERROR: Invalid last_verified date on line {line}; use YYYY-MM-DD')
+                  if row['status'] not in allowed_statuses:
+                      sys.exit(f'ERROR: Unknown status on line {line}: {row["status"]}')
+                  if not row['source_url'].startswith('https://'):
+                      sys.exit(f'ERROR: source_url must use HTTPS on line {line}')
+
+              if count == 0:
+                  sys.exit('ERROR: CSV contains no data records')
+
+          print(f'OK: validated {count} tax deadline record(s).')
+          PY
